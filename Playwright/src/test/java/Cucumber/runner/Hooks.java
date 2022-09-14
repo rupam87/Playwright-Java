@@ -3,8 +3,12 @@ package Cucumber.runner;
 import Cucumber.ScenarioContext;
 import com.microsoft.playwright.*;
 import io.cucumber.java.*;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Hooks {
@@ -17,7 +21,7 @@ public class Hooks {
     }
 
     @Before
-    public void beforeScenario(){
+    public void beforeScenario(Scenario scenario){
         playwright = Playwright.create();
         BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions();
         launchOptions.setHeadless(false);
@@ -32,10 +36,21 @@ public class Hooks {
     }
 
     @After
-    public void afterScenario(){
+    public void afterScenario(Scenario scenario){
+        // Capture screenshot if scenario failed
+        if (scenario.isFailed()) {
+            Page.ScreenshotOptions screenshotOptions = new Page.ScreenshotOptions();
+            String screenshotPath= System.getProperty("user.dir") + "\\target\\cucumber-reports\\screenshot\\" + DateTime.now().toString() + ".png";
+            screenshotOptions.setFullPage(true).setPath(Paths.get(screenshotPath.replaceAll(":","")).toAbsolutePath());
+            byte[] screenshot = this.scnContext.getAppLandingPage().screenshot(screenshotOptions);
+            scenario.attach(screenshot, "image/png", scenario.getName());
+        }
+
+
         this.scnContext.getBrowserContext().close();
         browser.close();
         playwright.close();
+
         System.out.println("Executed afterScenario");
     }
 
