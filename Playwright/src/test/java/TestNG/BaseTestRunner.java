@@ -1,3 +1,5 @@
+package TestNG;
+
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.BrowserType.LaunchOptions;
 import org.testng.annotations.*;
